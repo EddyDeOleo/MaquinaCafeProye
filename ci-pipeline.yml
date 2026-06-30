@@ -1,0 +1,34 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descargar el código del repositorio en la máquina virtual
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+
+      # 2. Instalar el SDK de .NET necesario para compilar C#
+      - name: Configurar entorno .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x' # Cambia a '6.0.x' o '7.0.x' si usas una versión anterior
+
+      # 3. Restaurar las dependencias y paquetes NuGet (como NUnit)
+      - name: Restaurar dependencias
+        run: dotnet restore
+
+      # 4. Compilar el proyecto en modo Release para verificar que no haya errores de sintaxis
+      - name: Compilar proyecto
+        run: dotnet build --no-restore --configuration Release
+
+      # 5. Ejecutar automáticamente los 8 casos de prueba de NUnit
+      - name: Ejecutar pruebas unitarias (TDD)
+        run: dotnet test --no-build --configuration Release --verbosity normal
